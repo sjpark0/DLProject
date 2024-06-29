@@ -33,7 +33,7 @@ onnx_model_path = None
 
 import warnings
 
-onnx_model_path = "sam_onnx_example.onnx"
+onnx_model_path = "models/sam_onnx_example.onnx"
 
 onnx_model = SamOnnxModel(sam, return_single_mask=True)
 
