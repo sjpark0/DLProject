@@ -36,7 +36,7 @@ output_names = ['output']
 # # Download Mobile-SAM model "sam_hq_vit_h.pt" from https://github.com/SysCV/sam-hq#model-checkpoints
 # # Installation: https://github.com/SysCV/sam-hq#quick-installation-via-pip
 import segment_anything as SAM
-checkpoint = './Weight/sam_vit_h_4b8939.pth'
+checkpoint = './weight/sam_vit_h_4b8939.pth'
 model_type = 'vit_h'
 output_path = 'models/sam_onnx_preprocess.onnx'
 quantize = True

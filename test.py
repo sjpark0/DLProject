@@ -2,6 +2,7 @@ from segment_anything import SamPredictor, SamAutomaticMaskGenerator, sam_model_
 #import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+import time
 
 def show_anns(anns):
     if len(anns) == 0:
@@ -48,10 +49,15 @@ def original(image, input_point, input_label):
     plt.show()
 
     sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
+    sam.to(device='cuda')
     predictor = SamPredictor(sam)
     predictor.set_image(image)
     
+    start = time.time()
     masks, scores, logits = predictor.predict(point_coords=input_point, point_labels=input_label, multimask_output=True,)
+    end = time.time()
+    print(end - start, "sec")
+
     print(masks.shape)
     for i, (mask, score) in enumerate(zip(masks, scores)):
         plt.imshow(image)
@@ -78,16 +84,16 @@ def export_test(image, input_point, input_label):
     ort_session = onnxruntime.InferenceSession(onnx_model_path)
 
 
-    sam_checkpoint = 'Weight/sam_vit_h_4b8939.pth'
-    model_type = "vit_h"
-    sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
+    #sam_checkpoint = 'Weight/sam_vit_h_4b8939.pth'
+    #model_type = "vit_h"
+    #sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
     #print(sam.image_encoder.img_size)
     plt.imshow(image)
     show_points(input_point, input_label, plt.gca())
     plt.axis('on')
     plt.show()
 
-    predictor = SamPredictor(sam)
+    #predictor = SamPredictor(sam)
     #predictor.set_image(image)
     
     #image_embedding = predictor.get_image_embedding().cpu().numpy()
