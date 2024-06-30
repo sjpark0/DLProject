@@ -8,6 +8,7 @@
 #include <locale>
 #include <opencv2/opencv.hpp>
 #include <vector>
+using namespace std;
 
 struct SamModel {
   Ort::Env env{ORT_LOGGING_LEVEL_WARNING, "test"};
@@ -18,7 +19,7 @@ struct SamModel {
   bool bModelLoaded = false, bSamHQ = false, bEdgeSam = false;
   std::vector<float> outputTensorValuesPre, intermTensorValuesPre;
 
-  char *inputNamesSam[6]{"image_embeddings", "point_coords",   "point_labels",
+  const char *inputNamesSam[6]{"image_embeddings", "point_coords",   "point_labels",
                          "mask_input",       "has_mask_input", "orig_im_size"},
       *inputNamesSamHQ[7]{"image_embeddings", "interm_embeddings", "point_coords", "point_labels",
                           "mask_input",       "has_mask_input",    "orig_im_size"},
@@ -36,6 +37,7 @@ struct SamModel {
     }
 
     for (int i = 0; i < 2; i++) {
+        printf("%d\n", i);
       auto& provider = param.providers[i];
       auto& option = sessionOptions[i];
 
@@ -50,8 +52,9 @@ struct SamModel {
         }
         option.AppendExecutionProvider_CUDA(options);
       }
+      printf("%d\n", i);
     }
-
+    printf("here!!\n");
 #if _MSC_VER
     std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
     auto wpreModelPath = converter.from_bytes(param.models[0]);
@@ -60,7 +63,7 @@ struct SamModel {
     auto wpreModelPath = param.models[0];
     auto wsamModelPath = param.models[1];
 #endif
-
+    printf("here!!\n");
     sessionPre = std::make_unique<Ort::Session>(env, wpreModelPath.c_str(), sessionOptions[0]);
     int targetNumber[]{1, 6};
 
@@ -70,11 +73,12 @@ struct SamModel {
         v++;
       }
     }
-
+    printf("here!!\n");
     if (sessionPre->GetInputCount() != 1 || sessionPre->GetOutputCount() != targetNumber[0]) {
       std::cerr << "Preprocessing model not loaded (invalid input/output count)" << std::endl;
       return;
     }
+    printf("here!!\n");
 
     sessionSam = std::make_unique<Ort::Session>(env, wsamModelPath.c_str(), sessionOptions[1]);
     const auto samOutputCount = sessionSam->GetOutputCount();

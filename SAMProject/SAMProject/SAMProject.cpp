@@ -2,10 +2,31 @@
 //
 
 #include <iostream>
+#include "sam.h"
+#include "opencv2/opencv.hpp"
 
 int main()
 {
-    std::cout << "Hello World!\n";
+    Sam::Parameter param("..\\..\\models\\sam_onnx_preprocess.onnx", "..\\..\\models\\sam_onnx_example.onnx", std::thread::hardware_concurrency());
+    param.providers[0].deviceType = 0; // cpu for preprocess
+    param.providers[1].deviceType = 0; // CUDA for sam
+    Sam sam(param);
+    printf("here!!\n");
+    auto inputSize = sam.getInputSize();
+    printf("here!!\n");
+
+    cv::Mat image = cv::imread("..\\..\\Data\\000.png");
+    printf("here!!\n");
+
+    cv::resize(image, image, inputSize);
+    printf("here!!\n");
+
+    sam.loadImage(image);
+    printf("Finish!!\n");
+
+    cv::Mat mask = sam.autoSegment({ 10, 10 });
+    cv::imwrite("output.png", mask);
+
 }
 
 // 프로그램 실행: <Ctrl+F5> 또는 [디버그] > [디버깅하지 않고 시작] 메뉴
