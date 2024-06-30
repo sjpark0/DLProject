@@ -24,7 +24,9 @@ int main()
     sam.loadImage(image);
     printf("Finish!!\n");
 
-    cv::Mat mask = sam.autoSegment({ 10, 10 });
+    //cv::Mat mask = sam.autoSegment({ 10, 10 });
+    cv::Mat mask = sam.getMask({ 568, 305 }); // 533 * 1024 / 960, 286 * 1024 / 960
+
     cv::imwrite("output.png", mask);
 
 }
