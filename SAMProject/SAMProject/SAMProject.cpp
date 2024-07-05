@@ -1,21 +1,273 @@
-﻿// SAMProject.cpp : 이 파일에는 'main' 함수가 포함됩니다. 거기서 프로그램 실행이 시작되고 종료됩니다.
+﻿// SamProject.cpp : 이 파일에는 'main' 함수가 포함됩니다. 거기서 프로그램 실행이 시작되고 종료됩니다.
 //
 
 #include <iostream>
 #include "sam.h"
+#include "SJSegmentAnything.h"
+#include "SJSegmentAnythingGPU.h"
+#include "SJSegmentAnythingTRT.h"
 #include "opencv2/opencv.hpp"
-
-int main()
+#include <Windows.h>
+using namespace std;
+void PerfomanceTest()
 {
-    Sam::Parameter param("..\\..\\models\\sam_onnx_preprocess.onnx", "..\\..\\models\\sam_onnx_example.onnx", std::thread::hardware_concurrency());
-    param.providers[0].deviceType = 0; // cpu for preprocess
-    param.providers[1].deviceType = 0; // CUDA for sam
+    LARGE_INTEGER tickFreq;
+    LARGE_INTEGER tickStart;
+    LARGE_INTEGER tickEnd;
+    QueryPerformanceFrequency(&tickFreq);
+
+    double res;
+    cv::Size inputSize;
+    cv::Mat image;
+    std::vector<cv::Point> points;
+    cv::Mat mask;
+
+    image = cv::imread("..\\Data\\000.png");
+    points.clear();
+    points.push_back(cv::Point(568, 305));
+
+    SJSegmentAnything* samcpu;
+    SJSegmentAnythingGPU* samgpu;
+    SJSegmentAnythingTRT* samtrt;
+    QueryPerformanceCounter(&tickStart);
+    samcpu = new SJSegmentAnything();
+    samcpu->InitializeSamModel("..\\\models\\sam_onnx_preprocess.onnx", "..\\models\\sam_onnx_example.onnx");
+    inputSize = samcpu->GetInputSize();
+    cv::resize(image, image, inputSize);
+    mask = cv::Mat(inputSize.height, inputSize.width, CV_8UC1);
+    samcpu->SamLoadImage(image);
+    samcpu->GetMask(points, {}, {}, mask, res);
+    delete samcpu;
+    QueryPerformanceCounter(&tickEnd);
+    cout << "Warming up (CPU) : " << (double)(tickEnd.QuadPart - tickStart.QuadPart) / (double)(tickFreq.QuadPart) << "sec" << endl;
+
+    QueryPerformanceCounter(&tickStart);
+    samcpu = new SJSegmentAnything();
+    samcpu->InitializeSamModel("..\\\models\\sam_onnx_preprocess.onnx", "..\\models\\sam_onnx_example.onnx");
+    inputSize = samcpu->GetInputSize();
+    cv::resize(image, image, inputSize);
+    mask = cv::Mat(inputSize.height, inputSize.width, CV_8UC1);
+    samcpu->SamLoadImage(image);
+    samcpu->GetMask(points, {}, {}, mask, res);
+    QueryPerformanceCounter(&tickEnd);
+    cout << "Second (CPU): " << (double)(tickEnd.QuadPart - tickStart.QuadPart) / (double)(tickFreq.QuadPart) << "sec" << endl;
+
+    QueryPerformanceCounter(&tickStart);
+    for (int i = 0; i < 100; i++) {
+        samcpu->GetMask(points, {}, {}, mask, res);
+    }
+    QueryPerformanceCounter(&tickEnd);
+
+    cout << "GetMask Only (CPU) " << (double)(tickEnd.QuadPart - tickStart.QuadPart) / (double)(tickFreq.QuadPart) << "sec" << endl;
+    delete samcpu;
+
+
+
+    QueryPerformanceCounter(&tickStart);
+    samgpu = new SJSegmentAnythingGPU();
+    samgpu->InitializeSamModel("..\\\models\\sam_onnx_preprocess.onnx", "..\\models\\sam_onnx_example.onnx");
+    inputSize = samgpu->GetInputSize();
+    cv::resize(image, image, inputSize);
+    mask = cv::Mat(inputSize.height, inputSize.width, CV_8UC1);
+    samgpu->SamLoadImage(image);
+    samgpu->GetMask(points, {}, {}, mask, res);
+    delete samgpu;
+    QueryPerformanceCounter(&tickEnd);
+    cout << "Warming up (GPU) : " << (double)(tickEnd.QuadPart - tickStart.QuadPart) / (double)(tickFreq.QuadPart) << "sec" << endl;
+
+    QueryPerformanceCounter(&tickStart);
+    samgpu = new SJSegmentAnythingGPU();
+    samgpu->InitializeSamModel("..\\\models\\sam_onnx_preprocess.onnx", "..\\models\\sam_onnx_example.onnx");
+    inputSize = samgpu->GetInputSize();
+    cv::resize(image, image, inputSize);
+    mask = cv::Mat(inputSize.height, inputSize.width, CV_8UC1);
+    samgpu->SamLoadImage(image);
+    samgpu->GetMask(points, {}, {}, mask, res);
+    QueryPerformanceCounter(&tickEnd);
+    cout << "Second (GPU): " << (double)(tickEnd.QuadPart - tickStart.QuadPart) / (double)(tickFreq.QuadPart) << "sec" << endl;
+
+    QueryPerformanceCounter(&tickStart);
+    for (int i = 0; i < 100; i++) {
+        samgpu->GetMask(points, {}, {}, mask, res);
+    }
+    QueryPerformanceCounter(&tickEnd);
+    cout << "GetMask Only (GPU) " << (double)(tickEnd.QuadPart - tickStart.QuadPart) / (double)(tickFreq.QuadPart) << "sec" << endl;
+    delete samgpu;
+
+    QueryPerformanceCounter(&tickStart);
+    samcpu = new SJSegmentAnything();
+    samcpu->InitializeSamModel("..\\\models\\sam_onnx_preprocess.onnx", "..\\models\\sam_onnx_example.onnx");
+    inputSize = samcpu->GetInputSize();
+    cv::resize(image, image, inputSize);
+    mask = cv::Mat(inputSize.height, inputSize.width, CV_8UC1);
+    samcpu->SamLoadImage(image);
+    samcpu->GetMask(points, {}, {}, mask, res);
+    delete samcpu;
+    QueryPerformanceCounter(&tickEnd);
+    cout << "Warming up (CPU) : " << (double)(tickEnd.QuadPart - tickStart.QuadPart) / (double)(tickFreq.QuadPart) << "sec" << endl;
+
+    QueryPerformanceCounter(&tickStart);
+    samcpu = new SJSegmentAnything();
+    samcpu->InitializeSamModel("..\\\models\\sam_onnx_preprocess.onnx", "..\\models\\sam_onnx_example.onnx");
+    inputSize = samcpu->GetInputSize();
+    cv::resize(image, image, inputSize);
+    mask = cv::Mat(inputSize.height, inputSize.width, CV_8UC1);
+    samcpu->SamLoadImage(image);
+    samcpu->GetMask(points, {}, {}, mask, res);
+    QueryPerformanceCounter(&tickEnd);
+    cout << "Second (CPU): " << (double)(tickEnd.QuadPart - tickStart.QuadPart) / (double)(tickFreq.QuadPart) << "sec" << endl;
+
+    QueryPerformanceCounter(&tickStart);
+    for (int i = 0; i < 100; i++) {
+        samcpu->GetMask(points, {}, {}, mask, res);
+    }
+    QueryPerformanceCounter(&tickEnd);
+
+    cout << "GetMask Only (CPU) " << (double)(tickEnd.QuadPart - tickStart.QuadPart) / (double)(tickFreq.QuadPart) << "sec" << endl;
+    delete samcpu;
+
+    QueryPerformanceCounter(&tickStart);
+    samtrt = new SJSegmentAnythingTRT();
+    samtrt->InitializeSamModel("..\\\models\\sam_onnx_preprocess.onnx", "..\\models\\sam_onnx_example.onnx");
+    inputSize = samtrt->GetInputSize();
+    cv::resize(image, image, inputSize);
+    mask = cv::Mat(inputSize.height, inputSize.width, CV_8UC1);
+    samtrt->SamLoadImage(image);
+    samtrt->GetMask(points, {}, {}, mask, res);
+    delete samtrt;
+    QueryPerformanceCounter(&tickEnd);
+    cout << "Warming up (TRT) : " << (double)(tickEnd.QuadPart - tickStart.QuadPart) / (double)(tickFreq.QuadPart) << "sec" << endl;
+
+    QueryPerformanceCounter(&tickStart);
+    samtrt = new SJSegmentAnythingTRT();
+    samtrt->InitializeSamModel("..\\\models\\sam_onnx_preprocess.onnx", "..\\models\\sam_onnx_example.onnx");
+    inputSize = samtrt->GetInputSize();
+    cv::resize(image, image, inputSize);
+    mask = cv::Mat(inputSize.height, inputSize.width, CV_8UC1);
+    samtrt->SamLoadImage(image);
+    samtrt->GetMask(points, {}, {}, mask, res); 
+    QueryPerformanceCounter(&tickEnd);
+    cout << "Second (TRT): " << (double)(tickEnd.QuadPart - tickStart.QuadPart) / (double)(tickFreq.QuadPart) << "sec" << endl;
+
+    QueryPerformanceCounter(&tickStart);
+    for (int i = 0; i < 100; i++) {
+        samtrt->GetMask(points, {}, {}, mask, res);
+    }
+    QueryPerformanceCounter(&tickEnd);
+
+    cout << "GetMask Only (TRT) " << (double)(tickEnd.QuadPart - tickStart.QuadPart) / (double)(tickFreq.QuadPart) << "sec" << endl;
+    delete samtrt;
+}
+void SamOriginal()
+{
+    Sam::Parameter param("..\\\models\\sam_onnx_preprocess.onnx", "..\\models\\sam_onnx_example.onnx", std::thread::hardware_concurrency());
+    param.providers[0].deviceType = 1; // cpu for preprocess
+    param.providers[1].deviceType = 1; // CUDA for sam
+    Sam sam(param);
+    auto inputSize = sam.getInputSize();
+    
+    cv::Mat image = cv::imread("..\\Data\\000.png");
+    
+    cv::resize(image, image, inputSize);
+    
+    sam.loadImage(image);
+    
+    //cv::Mat mask = sam.autoSegment({ 10, 10 });
+    cv::Mat mask = sam.getMask({ 568, 305 }); // 533 * 1024 / 960, 286 * 1024 / 960
+
+    cv::imwrite("output_original.png", mask);
+}
+void SamCPU()
+{
+    double res;
+    cv::Size inputSize;
+    cv::Mat image;
+    std::vector<cv::Point> points;
+    cv::Mat mask;
+
+    image = cv::imread("..\\Data\\000.png");
+    points.clear();
+    points.push_back(cv::Point(568, 305));
+
+    SJSegmentAnything* samcpu;
+    samcpu = new SJSegmentAnything();
+    samcpu->InitializeSamModel("..\\\models\\sam_onnx_preprocess.onnx", "..\\models\\sam_onnx_example.onnx");
+    inputSize = samcpu->GetInputSize();
+    cv::resize(image, image, inputSize);
+    mask = cv::Mat(inputSize.height, inputSize.width, CV_8UC1);
+    samcpu->SamLoadImage(image);
+    samcpu->GetMask(points, {}, {}, mask, res);
+    cv::imwrite("output_cpu.png", mask);
+
+    delete samcpu;
+
+}
+void SamGPU()
+{
+    double res;
+    cv::Size inputSize;
+    cv::Mat image;
+    std::vector<cv::Point> points;
+    cv::Mat mask;
+
+    image = cv::imread("..\\Data\\000.png");
+    points.clear();
+    points.push_back(cv::Point(568, 305));
+
+    SJSegmentAnythingGPU* samgpu;
+    samgpu = new SJSegmentAnythingGPU();
+    samgpu->InitializeSamModel("..\\\models\\sam_onnx_preprocess.onnx", "..\\models\\sam_onnx_example.onnx");
+    inputSize = samgpu->GetInputSize();
+    cv::resize(image, image, inputSize);
+    mask = cv::Mat(inputSize.height, inputSize.width, CV_8UC1);
+    samgpu->SamLoadImage(image);
+    samgpu->GetMask(points, {}, {}, mask, res);
+    cv::imwrite("output_gpu.png", mask);
+
+    delete samgpu;
+}
+void SamTRT()
+{
+    double res;
+    cv::Size inputSize;
+    cv::Mat image;
+    std::vector<cv::Point> points;
+    cv::Mat mask;
+
+    image = cv::imread("..\\Data\\000.png");
+    points.clear();
+    points.push_back(cv::Point(568, 305));
+
+    SJSegmentAnythingTRT *samtrt;
+    samtrt = new SJSegmentAnythingTRT();
+    //printf("%d\n", samtrt->InitializeSamModel("..\\\models\\sam_onnx_preprocess.onnx", "..\\models\\sam_onnx_example.onnx"));
+    printf("%d\n", samtrt->InitializeSamModel("..\\\models\\sam_vit_h_embedding_first.onnx", "..\\models\\sam_vit_h_embedding_second.onnx"));
+    /*inputSize = samtrt->GetInputSize();
+    cv::resize(image, image, inputSize);
+    mask = cv::Mat(inputSize.height, inputSize.width, CV_8UC1);
+    samtrt->SamLoadImage(image);
+    samtrt->GetMask(points, {}, {}, mask, res);
+    cv::imwrite("output_trt.png", mask);*/
+
+    delete samtrt;
+}
+int main()
+{   
+    //SamOriginal();
+    //SamCPU();
+    //SamGPU();
+    SamTRT();
+    //PerfomanceTest();
+
+    /*Sam::Parameter param("..\\\models\\sam_onnx_preprocess.onnx", "..\\models\\sam_onnx_example.onnx", std::thread::hardware_concurrency());
+    param.providers[0].deviceType = 1; // cpu for preprocess
+    param.providers[1].deviceType = 1; // CUDA for sam
     Sam sam(param);
     printf("here!!\n");
     auto inputSize = sam.getInputSize();
     printf("here!!\n");
 
-    cv::Mat image = cv::imread("..\\..\\Data\\000.png");
+    cv::Mat image = cv::imread("..\\Data\\000.png");
     printf("here!!\n");
 
     cv::resize(image, image, inputSize);
@@ -27,17 +279,7 @@ int main()
     //cv::Mat mask = sam.autoSegment({ 10, 10 });
     cv::Mat mask = sam.getMask({ 568, 305 }); // 533 * 1024 / 960, 286 * 1024 / 960
 
-    cv::imwrite("output.png", mask);
-
+    cv::imwrite("output.png", mask);*/
+    //SJSegmentAnything sam;
+    
 }
-
-// 프로그램 실행: <Ctrl+F5> 또는 [디버그] > [디버깅하지 않고 시작] 메뉴
-// 프로그램 디버그: <F5> 키 또는 [디버그] > [디버깅 시작] 메뉴
-
-// 시작을 위한 팁: 
-//   1. [솔루션 탐색기] 창을 사용하여 파일을 추가/관리합니다.
-//   2. [팀 탐색기] 창을 사용하여 소스 제어에 연결합니다.
-//   3. [출력] 창을 사용하여 빌드 출력 및 기타 메시지를 확인합니다.
-//   4. [오류 목록] 창을 사용하여 오류를 봅니다.
-//   5. [프로젝트] > [새 항목 추가]로 이동하여 새 코드 파일을 만들거나, [프로젝트] > [기존 항목 추가]로 이동하여 기존 코드 파일을 프로젝트에 추가합니다.
-//   6. 나중에 이 프로젝트를 다시 열려면 [파일] > [열기] > [프로젝트]로 이동하고 .sln 파일을 선택합니다.

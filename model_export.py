@@ -25,7 +25,7 @@ def show_box(box, ax):
     w, h = box[2] - box[0], box[3] - box[1]
     ax.add_patch(plt.Rectangle((x0, y0), w, h, edgecolor='green', facecolor=(0,0,0,0), lw=2)) 
     
-checkpoint = 'weight/sam_vit_h_4b8939.pth'
+checkpoint = 'weights/sam_vit_h_4b8939.pth'
 model_type = "vit_h"
 sam = sam_model_registry[model_type](checkpoint=checkpoint)
 
@@ -33,7 +33,7 @@ onnx_model_path = None
 
 import warnings
 
-onnx_model_path = "models/sam_onnx_example.onnx"
+onnx_model_path = "../models/sam_onnx_example.onnx"
 
 onnx_model = SamOnnxModel(sam, return_single_mask=True)
 

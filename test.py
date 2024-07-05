@@ -1,5 +1,5 @@
 from segment_anything import SamPredictor, SamAutomaticMaskGenerator, sam_model_registry
-#import cv2
+import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import time
@@ -40,7 +40,7 @@ def show_box(box, ax):
     ax.add_patch(plt.Rectangle((x0, y0), w, h, edgecolor='green', facecolor=(0,0,0,0), lw=2))    
         
 def original(image, input_point, input_label):
-    sam_checkpoint = 'Weight/sam_vit_h_4b8939.pth'
+    sam_checkpoint = 'weights/sam_vit_h_4b8939.pth'
     model_type = "vit_h"
 
     plt.imshow(image)
@@ -77,13 +77,17 @@ def original(image, input_point, input_label):
 
 def export_test(image, input_point, input_label):
     import onnxruntime
-    onnx_model_path_preprocess = './models/sam_onnx_preprocess.onnx'
-    onnx_model_path = './models/sam_onnx_example.onnx'
+    onnx_model_path_preprocess = '../models/sam_onnx_preprocess.onnx'
+    onnx_model_path = '../models/sam_onnx_example.onnx'
     
-    ort_session_preprocess = onnxruntime.InferenceSession(onnx_model_path_preprocess)
-    ort_session = onnxruntime.InferenceSession(onnx_model_path)
+    #EP_list = ['CUDAExecutionProvider', 'CPUExecutionProvider']
+    EP_list = ['CUDAExecutionProvider']
 
+    ort_session_preprocess = onnxruntime.InferenceSession(onnx_model_path_preprocess, provider=EP_list)
+    ort_session = onnxruntime.InferenceSession(onnx_model_path, provider=EP_list)
 
+    #print(onnxruntime.get_device())
+    
     #sam_checkpoint = 'Weight/sam_vit_h_4b8939.pth'
     #model_type = "vit_h"
     #sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
@@ -150,11 +154,12 @@ def export_test(image, input_point, input_label):
     #    plt.show()
     #plt.show() 
     
-image = plt.imread('Data/000.png')
-input_point = np.array([[533, 286]])
+#image = plt.imread('../Data/000.png')
+input_point = np.array([[2132, 1144]])
 input_label = np.array([1])
-image = (image * 255).astype('uint8')
-
+#image = (image * 255).astype('uint8')
+image = cv2.imread("../Data/000.png")
+image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 #original(image, input_point, input_label)
 export_test(image, input_point, input_label)
 

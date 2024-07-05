@@ -37,7 +37,7 @@ struct SamModel {
     }
 
     for (int i = 0; i < 2; i++) {
-        printf("%d\n", i);
+        
       auto& provider = param.providers[i];
       auto& option = sessionOptions[i];
 
@@ -52,9 +52,8 @@ struct SamModel {
         }
         option.AppendExecutionProvider_CUDA(options);
       }
-      printf("%d\n", i);
     }
-    printf("here!!\n");
+    
 #if _MSC_VER
     std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
     auto wpreModelPath = converter.from_bytes(param.models[0]);
@@ -63,7 +62,7 @@ struct SamModel {
     auto wpreModelPath = param.models[0];
     auto wsamModelPath = param.models[1];
 #endif
-    printf("here!!\n");
+    
     sessionPre = std::make_unique<Ort::Session>(env, wpreModelPath.c_str(), sessionOptions[0]);
     int targetNumber[]{1, 6};
 
@@ -73,13 +72,12 @@ struct SamModel {
         v++;
       }
     }
-    printf("here!!\n");
+    
     if (sessionPre->GetInputCount() != 1 || sessionPre->GetOutputCount() != targetNumber[0]) {
       std::cerr << "Preprocessing model not loaded (invalid input/output count)" << std::endl;
       return;
     }
-    printf("here!!\n");
-
+    
     sessionSam = std::make_unique<Ort::Session>(env, wsamModelPath.c_str(), sessionOptions[1]);
     const auto samOutputCount = sessionSam->GetOutputCount();
 
@@ -152,6 +150,7 @@ struct SamModel {
       SetInput(inputTensorValuesFloat);
     }
 
+    
 #define InputTensor(inputTensorValues, type)                                                     \
   Ort::Value::CreateTensor<type>(memoryInfo, inputTensorValues.data(), inputTensorValues.size(), \
                                  inputShapePre.data(), inputShapePre.size())
@@ -181,9 +180,19 @@ struct SamModel {
     const char *inputNamesPreEdge[] = {"image"}, *outputNamesPreEdge[] = {"image_embeddings"};
     const auto inputNamesPre1 = bEdgeSam ? inputNamesPreEdge : inputNamesPre,
                outputNamesPre1 = bEdgeSam ? outputNamesPreEdge : outputNamesPre;
+
+    
     sessionPre->Run(run_options, inputNamesPre1, &inputTensor, 1, outputNamesPre1,
                     outputTensors.data(), outputTensors.size());
 
+    /*FILE* fp;
+    fopen_s(&fp, "test.raw", "wb");
+    fwrite(outputTensors[0].GetTensorMutableData<unsigned char>(), 1048576, sizeof(unsigned char), fp);
+    fclose(fp);
+
+    fopen_s(&fp, "test1.raw", "wb");
+    fwrite(outputTensorValuesPre.data(), 1048576, sizeof(unsigned char), fp);
+    fclose(fp);*/
     return true;
   }
 
