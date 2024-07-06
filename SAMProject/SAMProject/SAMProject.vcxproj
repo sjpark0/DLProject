@@ -132,15 +132,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../3rdparty/TensorRT;../3rdparty/TensorRT/common;../3rdparty/TensorRT/include;../3rdparty/opencv/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../3rdparty/TensorRT/lib;../3rdparty/opencv/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_world4100.lib;nvinfer.lib;nvinfer_plugin.lib;nvonnxparser.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opencv_world400.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -148,13 +148,11 @@
     <ClCompile Include="SamProject.cpp" />
     <ClCompile Include="SJSegmentAnything.cpp" />
     <ClCompile Include="SJSegmentAnythingGPU.cpp" />
-    <ClCompile Include="SJSegmentAnythingTRT.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sam.h" />
     <ClInclude Include="SJSegmentAnything.h" />
     <ClInclude Include="SJSegmentAnythingGPU.h" />
-    <ClInclude Include="SJSegmentAnythingTRT.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
